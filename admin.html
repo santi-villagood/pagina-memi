@@ -8,7 +8,7 @@
 <body>
 <header><div class="wrap" style="padding:0"><h1>Panel</h1><p>Acá cargás y editás tus piezas.</p></div></header>
 <div class="wrap">
-<form class="f" id="login"><label>Email<input id="em" type="email" required autocomplete="username"></label><label>Contraseña<input id="pw" type="password" required autocomplete="current-password"></label><button class="btn">Entrar</button></form>
+<form class="f" id="login"><label>Email<input id="em" type="email" required autocomplete="username"></label><label>Contraseña<input id="pw" type="password" required autocomplete="current-password"></label><label style="display:flex;gap:.5rem;font-weight:400"><input type="checkbox" style="width:auto" onchange="pw.type=this.checked?'text':'password'">Mostrar contraseña</label><button class="btn">Entrar</button></form>
 <div id="panel" hidden>
 <form class="f" id="form">
 <h2 id="ft" style="margin:0">Nueva pieza</h2>
@@ -31,7 +31,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const msg=t=>$('#msg').textContent=t;
 function show(on){$('#login').hidden=on;$('#panel').hidden=!on;if(on)load()}
 db.auth.getSession().then(({data})=>show(!!data.session));
-$('#login').onsubmit=async e=>{e.preventDefault();const {error}=await db.auth.signInWithPassword({email:$('#em').value,password:$('#pw').value});if(error)alert('Email o contraseña incorrectos.');else show(true)};
+$('#login').onsubmit=async e=>{e.preventDefault();const {error}=await db.auth.signInWithPassword({email:$('#em').value,password:$('#pw').value});if(error)alert('No se pudo entrar. Detalle: '+error.message);else show(true)};
 $('#out').onclick=async()=>{await db.auth.signOut();show(false)};
 async function load(){
   const {data}=await db.from('products').select('*').order('created_at',{ascending:false});list=data||[];
