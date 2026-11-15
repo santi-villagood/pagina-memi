@@ -29,7 +29,7 @@ async function getRate(){
 async function init(){
   const [r,{data,error}]=await Promise.all([getRate(),db.from('products').select('*').order('created_at',{ascending:false})]);
   rate=r;items=data||[];
-  if(error){$('#grid').innerHTML='<p>No se pudieron cargar las piezas. Probá de nuevo en un rato.</p>';return}
+  if(error){$('#grid').innerHTML='<p>No se pudieron cargar las piezas. Detalle: '+esc(error.message)+'</p>';return}
   $('#note').textContent=rate?'Los valores en pesos son orientativos (dólar blue de hoy) y se confirman al hacer el pedido.':'';
   render()}
 function render(){
@@ -41,11 +41,11 @@ function render(){
 function count(){$('#cartbtn').textContent=`Mi pedido (${Object.values(cart).reduce((a,b)=>a+b,0)})`}
 function add(id){cart[id]=(cart[id]||0)+1;count()}
 function detail(id){const p=items.find(x=>x.id===id);
-  $('#dd').innerHTML=`<img src="${esc(p.photo_url)}" alt="${esc(p.title)}"><h2>${esc(p.title)}</h2><span class="tag">${esc(p.category)}</span><p style="white-space:pre-line">${esc(p.description)}</p><p class="pr">${price(p.price_usd)}</p><button class="btn" data-add="${p.id}">Agregar al pedido</button> <button class="btn alt" data-close>Cerrar</button>`;
+  $('#dd').innerHTML=`<img src="${esc(p.photo_url)}" alt="${esc(p.title)}"><h2>${esc(p.title)}</h2><span class="tag">${esc(p.category)}</span><p style="white-space:pre-line">${esc(p.description)}</p><p class="pr">${price(p.price_usd)}</p><button class="btn" data-add="${p.id}">Agregar al pedido</button> <button class="btn alt" data-close="1">Cerrar</button>`;
   $('#dd').showModal()}
 function cartView(){
   const ids=Object.keys(cart).filter(i=>cart[i]>0),tot=ids.reduce((a,i)=>a+cart[i]*items.find(p=>p.id===i).price_usd,0);
-  $('#cd').innerHTML=`<h2>Mi pedido</h2>`+(ids.length?ids.map(i=>{const p=items.find(x=>x.id===i);return `<div class="row"><span>${esc(p.title)}<br><small>${price(p.price_usd)}</small></span><span class="q"><button data-m="${i}" aria-label="Quitar uno">-</button> ${cart[i]} <button data-p="${i}" aria-label="Agregar uno">+</button></span></div>`}).join('')+`<p class="pr">Total: ${price(tot)}</p><button class="btn" data-send>Enviar pedido por WhatsApp</button> `:'<p>Todavía no agregaste nada. Tocá "Agregar" en las piezas que te gusten.</p>')+`<button class="btn alt" data-close>Cerrar</button>`;
+  $('#cd').innerHTML=`<h2>Mi pedido</h2>`+(ids.length?ids.map(i=>{const p=items.find(x=>x.id===i);return `<div class="row"><span>${esc(p.title)}<br><small>${price(p.price_usd)}</small></span><span class="q"><button data-m="${i}" aria-label="Quitar uno">-</button> ${cart[i]} <button data-p="${i}" aria-label="Agregar uno">+</button></span></div>`}).join('')+`<p class="pr">Total: ${price(tot)}</p><button class="btn" data-send="1">Enviar pedido por WhatsApp</button> `:'<p>Todavía no agregaste nada. Tocá "Agregar" en las piezas que te gusten.</p>')+`<button class="btn alt" data-close="1">Cerrar</button>`;
   if(!$('#cd').open)$('#cd').showModal()}
 function send(){
   const ids=Object.keys(cart).filter(i=>cart[i]>0);let tot=0;
