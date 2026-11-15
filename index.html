@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="es-AR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Impresiones 3D</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script></head>
+<body>
+<header><div class="wrap" style="padding:0"><h1 id="t"></h1><p>Hecho capa por capa. Elegí lo que te gusta, armá tu pedido y mandalo por WhatsApp.</p></div></header>
+<main>
+<div class="chips" id="chips" role="group" aria-label="Categorías"></div>
+<div class="grid" id="grid"><p>Cargando piezas...</p></div>
+<p class="note" id="note"></p>
+</main>
+<button class="btn" id="cartbtn">Mi pedido (0)</button>
+<dialog id="dd"></dialog>
+<dialog id="cd"></dialog>
+<script>
+const db=supabase.createClient(CFG.url,CFG.key),$=s=>document.querySelector(s);
+let items=[],cat='Todo',rate=0,cart={};
+document.title=CFG.store;$('#t').textContent=CFG.store;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ars=n=>'$'+Math.round(n).toLocaleString('es-AR');
+const price=p=>`USD ${p}`+(rate?` · aprox. ${ars(p*rate)}`:'');
+async function getRate(){
+  try{const j=await (await fetch('https://dolarapi.com/v1/dolares/blue')).json();if(j.venta)return +j.venta}catch(e){}
+  const {data}=await db.from('settings').select('value').eq('key','manual_rate').maybeSingle();
+  return data?+data.value:0}
+async function init(){
+  const [r,{data,error}]=await Promise.all([getRate(),db.from('products').select('*').order('created_at',{ascending:false})]);
+  rate=r;items=data||[];
+  if(error){$('#grid').innerHTML='<p>No se pudieron cargar las piezas. Probá de nuevo en un rato.</p>';return}
+  $('#note').textContent=rate?'Los valores en pesos son orientativos (dólar blue de hoy) y se confirman al hacer el pedido.':'';
+  render()}
+function render(){
+  const cats=['Todo',...new Set(items.map(p=>p.category))];
+  $('#chips').innerHTML=cats.map(c=>`<button class="chip" aria-pressed="${c===cat}" data-c="${esc(c)}">${esc(c)}</button>`).join('');
+  const list=items.filter(p=>cat==='Todo'||p.category===cat);
+  $('#grid').innerHTML=list.length?list.map(p=>`<article class="card" tabindex="0" data-id="${p.id}"><img loading="lazy" src="${esc(p.photo_url)}" alt="${esc(p.title)}"><div class="b"><h3>${esc(p.title)}</h3><span class="tag">${esc(p.category)}</span><p class="pr">${price(p.price_usd)}</p><button class="btn" data-add="${p.id}">Agregar</button></div></article>`).join(''):'<p>Todavía no hay piezas en esta categoría.</p>';
+  count()}
+function count(){$('#cartbtn').textContent=`Mi pedido (${Object.values(cart).reduce((a,b)=>a+b,0)})`}
+function add(id){cart[id]=(cart[id]||0)+1;count()}
+function detail(id){const p=items.find(x=>x.id===id);
+  $('#dd').innerHTML=`<img src="${esc(p.photo_url)}" alt="${esc(p.title)}"><h2>${esc(p.title)}</h2><span class="tag">${esc(p.category)}</span><p style="white-space:pre-line">${esc(p.description)}</p><p class="pr">${price(p.price_usd)}</p><button class="btn" data-add="${p.id}">Agregar al pedido</button> <button class="btn alt" data-close>Cerrar</button>`;
+  $('#dd').showModal()}
+function cartView(){
+  const ids=Object.keys(cart).filter(i=>cart[i]>0),tot=ids.reduce((a,i)=>a+cart[i]*items.find(p=>p.id===i).price_usd,0);
+  $('#cd').innerHTML=`<h2>Mi pedido</h2>`+(ids.length?ids.map(i=>{const p=items.find(x=>x.id===i);return `<div class="row"><span>${esc(p.title)}<br><small>${price(p.price_usd)}</small></span><span class="q"><button data-m="${i}" aria-label="Quitar uno">-</button> ${cart[i]} <button data-p="${i}" aria-label="Agregar uno">+</button></span></div>`}).join('')+`<p class="pr">Total: ${price(tot)}</p><button class="btn" data-send>Enviar pedido por WhatsApp</button> `:'<p>Todavía no agregaste nada. Tocá "Agregar" en las piezas que te gusten.</p>')+`<button class="btn alt" data-close>Cerrar</button>`;
+  if(!$('#cd').open)$('#cd').showModal()}
+function send(){
+  const ids=Object.keys(cart).filter(i=>cart[i]>0);let tot=0;
+  const lines=ids.map(i=>{const p=items.find(x=>x.id===i);tot+=cart[i]*p.price_usd;return `- ${cart[i]} x ${p.title} (USD ${p.price_usd})`});
+  const msg=`Hola! Quiero hacer este pedido:\n${lines.join('\n')}\nTotal aprox.: ${price(tot)}\nGracias!`;
+  window.open(`https://wa.me/${CFG.whatsapp}?text=${encodeURIComponent(msg)}`,'_blank')}
+document.addEventListener('click',e=>{
+  const t=e.target;
+  if(t.dataset.c){cat=t.dataset.c;render()}
+  else if(t.dataset.add){add(t.dataset.add);if($('#cd').open)cartView()}
+  else if(t.dataset.p){add(t.dataset.p);cartView()}
+  else if(t.dataset.m){cart[t.dataset.m]--;count();cartView()}
+  else if(t.dataset.send)send();
+  else if(t.dataset.close)t.closest('dialog').close();
+  else if(t.id==='cartbtn')cartView();
+  else if(t.closest('.card'))detail(t.closest('.card').dataset.id)});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList.contains('card'))detail(e.target.dataset.id)});
+init();
+</script></body></html>
