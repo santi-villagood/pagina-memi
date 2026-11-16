@@ -2,8 +2,10 @@
 <html lang="es-AR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Panel</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 <script src="config.js"></script></head>
 <body>
 <header><div class="wrap" style="padding:0"><h1>Panel</h1><p>Acá cargás y editás tus piezas.</p></div></header>
@@ -14,9 +16,11 @@
 <h2 id="ft" style="margin:0">Nueva pieza</h2>
 <label>Nombre<input id="ti" required></label>
 <label>Descripción<textarea id="de" rows="3"></textarea></label>
-<label>Categoría<input id="ca" list="cats" required placeholder="Ej: Decoración"></label><datalist id="cats"></datalist>
+<label>Categorías (separadas por coma)<input id="ca" placeholder="Ej: Marvel, Disfraces"></label>
+<div class="cb" id="cb" aria-label="Categorías existentes"></div>
 <label>Precio en dólares (USD)<input id="pu" type="number" min="0" step="0.01" required inputmode="decimal"></label>
-<label>Foto<input id="fo" type="file" accept="image/*"></label>
+<label>Fotos (podés elegir varias; la primera es la portada)<input id="fo" type="file" accept="image/*" multiple></label>
+<div class="th" id="th"></div>
 <button class="btn" id="save">Guardar pieza</button><button type="button" class="btn alt" id="cancel" hidden>Cancelar edición</button>
 <p class="msg" id="msg" role="status"></p>
 </form>
@@ -24,36 +28,54 @@
 <h2>Mis piezas</h2><div id="list"></div>
 <button class="btn alt" id="out" style="margin-top:1rem">Salir</button>
 </div></div>
+<dialog id="cr"><h2 style="margin-top:0">Recortá y girá la foto</h2><div id="cw"><img id="ci" alt="Foto a recortar"></div>
+<div style="display:flex;gap:.5rem;flex-wrap:wrap"><button type="button" class="btn alt" data-rot="-90">Girar a la izquierda</button><button type="button" class="btn alt" data-rot="90">Girar a la derecha</button><button type="button" class="btn" data-use="1">Usar esta foto</button><button type="button" class="btn alt" data-skip="1">Omitir</button><button type="button" class="btn alt" data-cancel="1">Cancelar todas</button></div></dialog>
 <script>
 const db=supabase.createClient(CFG.url,CFG.key),$=s=>document.querySelector(s);
-let list=[],editing=null;
+let list=[],editing=null,keep=[],fresh=[],queue=[],cropper=null;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const msg=t=>$('#msg').textContent=t;
+const cats=()=>$('#ca').value.split(',').map(s=>s.trim()).filter(Boolean);
 function show(on){$('#login').hidden=on;$('#panel').hidden=!on;if(on)load()}
 db.auth.getSession().then(({data})=>show(!!data.session));
 $('#login').onsubmit=async e=>{e.preventDefault();const {error}=await db.auth.signInWithPassword({email:$('#em').value,password:$('#pw').value});if(error)alert('No se pudo entrar. Detalle: '+error.message);else show(true)};
 $('#out').onclick=async()=>{await db.auth.signOut();show(false)};
 async function load(){
   const {data}=await db.from('products').select('*').order('created_at',{ascending:false});list=data||[];
-  $('#cats').innerHTML=[...new Set(list.map(p=>p.category))].map(c=>`<option value="${esc(c)}">`).join('');
-  $('#list').innerHTML=list.map(p=>`<div class="row"><span><b>${esc(p.title)}</b><br><small>${esc(p.category)} · USD ${p.price_usd}</small></span><span><button class="btn alt" data-e="${p.id}">Editar</button> <button class="btn del" data-d="${p.id}">Borrar</button></span></div>`).join('')||'<p>Todavía no cargaste piezas.</p>';
+  $('#cb').innerHTML=[...new Set(list.flatMap(p=>p.categories))].map(c=>`<button type="button" data-cat="${esc(c)}">+ ${esc(c)}</button>`).join('');
+  $('#list').innerHTML=list.map(p=>`<div class="row"><span><b>${esc(p.title)}</b><br><small>${esc(p.categories.join(', '))} · USD ${p.price_usd} · ${p.photos.length} foto(s)</small></span><span><button class="btn alt" data-e="${p.id}">Editar</button> <button class="btn del" data-d="${p.id}">Borrar</button></span></div>`).join('')||'<p>Todavía no cargaste piezas.</p>';
   const {data:s}=await db.from('settings').select('value').eq('key','manual_rate').maybeSingle();$('#rt').value=s?s.value:''}
-function shrink(f){return new Promise(r=>{const i=new Image();i.onload=()=>{const k=Math.min(1,1200/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=i.width*k;c.height=i.height*k;c.getContext('2d').drawImage(i,0,0,c.width,c.height);c.toBlob(r,'image/jpeg',.82)};i.src=URL.createObjectURL(f)})}
-function reset(){editing=null;$('#form').reset();$('#ft').textContent='Nueva pieza';$('#cancel').hidden=true}
+function thumbs(){$('#th').innerHTML=keep.map((u,i)=>`<span class="x"><img src="${esc(u)}" alt="Foto guardada"><button type="button" data-k="${i}" aria-label="Quitar foto">x</button></span>`).join('')+fresh.map((f,i)=>`<span class="x"><img src="${f.prev}" alt="Foto nueva"><button type="button" data-f="${i}" aria-label="Quitar foto">x</button></span>`).join('')}
+$('#th').onclick=e=>{const d=e.target.dataset;if(d.k)keep.splice(+d.k,1);if(d.f)fresh.splice(+d.f,1);thumbs()};
+$('#cb').onclick=e=>{const c=e.target.dataset.cat;if(c&&!cats().some(x=>x.toLowerCase()===c.toLowerCase()))$('#ca').value=[...cats(),c].join(', ')};
+$('#fo').onchange=e=>{queue=[...e.target.files];e.target.value='';next()};
+function next(){const f=queue.shift();if(!f){$('#cr').close();return}
+  const img=$('#ci');if(cropper){cropper.destroy();cropper=null}
+  img.onload=()=>{cropper=new Cropper(img,{viewMode:1,autoCropArea:1,background:false})};
+  img.src=URL.createObjectURL(f);if(!$('#cr').open)$('#cr').showModal()}
+$('#cr').onclose=()=>{queue=[]};
+$('#cr').onclick=e=>{const d=e.target.dataset;if(!cropper)return;
+  if(d.rot)cropper.rotate(+d.rot);
+  if(d.use)cropper.getCroppedCanvas({maxWidth:1200,maxHeight:1200}).toBlob(b=>{fresh.push({blob:b,prev:URL.createObjectURL(b)});thumbs();next()},'image/jpeg',.82);
+  if(d.skip)next();
+  if(d.cancel){queue=[];$('#cr').close()}};
+function reset(){editing=null;keep=[];fresh=[];$('#form').reset();thumbs();$('#ft').textContent='Nueva pieza';$('#cancel').hidden=true}
 $('#cancel').onclick=reset;
 $('#form').onsubmit=async e=>{e.preventDefault();
-  const f=$('#fo').files[0];if(!f&&!editing){msg('Elegí una foto.');return}
+  if(!cats().length){msg('Poné al menos una categoría.');return}
+  if(!keep.length&&!fresh.length){msg('Agregá al menos una foto.');return}
   $('#save').disabled=true;msg('Guardando...');
-  const row={title:$('#ti').value.trim(),description:$('#de').value.trim(),category:$('#ca').value.trim(),price_usd:+$('#pu').value};
-  if(f){const path=Date.now()+'.jpg',{error:ue}=await db.storage.from('fotos').upload(path,await shrink(f),{contentType:'image/jpeg'});
-    if(ue){msg('No se pudo subir la foto: '+ue.message);$('#save').disabled=false;return}
-    row.photo_url=db.storage.from('fotos').getPublicUrl(path).data.publicUrl}
+  const urls=[...keep];
+  for(const f of fresh){const path=Date.now()+'-'+Math.random().toString(36).slice(2)+'.jpg',{error:ue}=await db.storage.from('fotos').upload(path,f.blob,{contentType:'image/jpeg'});
+    if(ue){msg('No se pudo subir una foto: '+ue.message);$('#save').disabled=false;return}
+    urls.push(db.storage.from('fotos').getPublicUrl(path).data.publicUrl)}
+  const row={title:$('#ti').value.trim(),description:$('#de').value.trim(),categories:cats(),price_usd:+$('#pu').value,photos:urls};
   const {error}=editing?await db.from('products').update(row).eq('id',editing):await db.from('products').insert(row);
   $('#save').disabled=false;
   if(error){msg('No se pudo guardar: '+error.message);return}
   msg('Pieza guardada.');reset();load()};
 $('#rf').onsubmit=async e=>{e.preventDefault();const {error}=await db.from('settings').upsert({key:'manual_rate',value:String($('#rt').value)});msg(error?'No se pudo guardar la cotización.':'Cotización guardada.')};
 $('#list').onclick=async e=>{const t=e.target;
-  if(t.dataset.e){const p=list.find(x=>x.id===t.dataset.e);editing=p.id;$('#ti').value=p.title;$('#de').value=p.description||'';$('#ca').value=p.category;$('#pu').value=p.price_usd;$('#ft').textContent='Editando: '+p.title;$('#cancel').hidden=false;scrollTo(0,0)}
+  if(t.dataset.e){const p=list.find(x=>x.id===t.dataset.e);editing=p.id;keep=[...p.photos];fresh=[];thumbs();$('#ti').value=p.title;$('#de').value=p.description||'';$('#ca').value=p.categories.join(', ');$('#pu').value=p.price_usd;$('#ft').textContent='Editando: '+p.title;$('#cancel').hidden=false;scrollTo(0,0)}
   if(t.dataset.d&&confirm('¿Borrar esta pieza?')){await db.from('products').delete().eq('id',t.dataset.d);load()}};
 </script></body></html>
