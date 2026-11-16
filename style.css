@@ -30,7 +30,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 @media(prefers-reduced-motion:reduce){.bump{animation:none}}
 .ars{display:block;font-size:1.15rem;font-weight:800}
 .usd{display:block;font-size:.85rem;font-weight:400;color:#736679}
-main{padding-bottom:3rem}
+main{padding-bottom:6rem}
+.note a{color:var(--teal);font-weight:600}
 dialog{border:0;border-radius:16px;max-width:min(520px,94vw);width:100%;padding:1rem}
 dialog::backdrop{background:#3b2a2ab0}
 dialog img{width:100%;border-radius:10px;max-height:50vh;object-fit:contain;background:var(--line)}
@@ -49,3 +50,6 @@ input,select,textarea{font:inherit;padding:.55rem;border:1px solid #9fb2ad;borde
 .cb button{font:inherit;font-size:.85rem;border:1px solid var(--ink);background:#fff;border-radius:99px;padding:.2rem .7rem;cursor:pointer}
 #cw{height:55vh;margin-bottom:.6rem}
 #cw img{max-width:100%}
+
+#wa{position:fixed;right:.8rem;bottom:max(.8rem,env(safe-area-inset-bottom));z-index:5;width:3.4rem;height:3.4rem;border-radius:50%;background:#189e50;display:grid;place-items:center;box-shadow:0 2px 8px #0003}
+#wa svg{width:1.9rem;height:1.9rem}
