@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#15191f">
+  <meta name="description" content="Acceso rápido al panel y al catálogo de MEMI.">
+  <title>MEMI</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon-192.png">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; padding: 24px;
+      display: grid; place-items: center;
+      background: radial-gradient(circle at top, #263344 0, #15191f 55%);
+      color: #fff; font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+    }
+    main { width: min(100%, 390px); }
+    header { text-align: center; margin: 10px 0 30px; }
+    .logo {
+      width: 76px; height: 76px; margin: 0 auto 14px;
+      display: grid; place-items: center; border-radius: 23px;
+      background: #2459c5; font-size: 39px; font-weight: 900;
+      box-shadow: 0 12px 32px #0005;
+    }
+    h1 { margin: 0; font-size: 34px; letter-spacing: 3px; }
+    header p { margin: 8px 0 0; color: #aab3c0; font-size: 14px; }
+    .actions { display: grid; gap: 16px; }
+    a.action {
+      min-height: 112px; padding: 22px; border-radius: 22px;
+      display: flex; align-items: center; gap: 18px;
+      color: white; text-decoration: none;
+      box-shadow: 0 10px 25px #0003;
+      transition: transform .15s ease, filter .15s ease;
+    }
+    a.action:active { transform: scale(.98); filter: brightness(.94); }
+    .upload { background: #2459c5; }
+    .shop { background: #237c55; }
+    .symbol { font-size: 34px; width: 48px; text-align: center; }
+    .copy { flex: 1; }
+    .copy strong { display: block; font-size: 20px; letter-spacing: .7px; }
+    .copy small { display: block; margin-top: 5px; color: #e1e8f4; font-size: 13px; }
+    .arrow { font-size: 28px; opacity: .9; }
+    #install {
+      display: none; width: 100%; margin-top: 20px; padding: 15px;
+      border: 1px solid #526174; border-radius: 15px;
+      color: white; background: #293443; font-size: 15px; font-weight: 650;
+    }
+    footer { text-align: center; color: #8994a3; font-size: 12px; margin-top: 24px; }
+    @media (prefers-reduced-motion: reduce) { a.action { transition: none; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="logo" aria-hidden="true">M</div>
+      <h1>MEMI</h1>
+      <p>Tu negocio, siempre a mano</p>
+    </header>
+    <section class="actions" aria-label="Accesos">
+      <a class="action upload" href="https://santi-villagood.github.io/pagina-memi/admin.html">
+        <span class="symbol" aria-hidden="true">⬆</span>
+        <span class="copy"><strong>SUBIR</strong><small>Agregar o editar productos</small></span>
+        <span class="arrow" aria-hidden="true">›</span>
+      </a>
+      <a class="action shop" href="https://santi-villagood.github.io/pagina-memi/">
+        <span class="symbol" aria-hidden="true">▣</span>
+        <span class="copy"><strong>NEGOCIO</strong><small>Ver tu página y catálogo</small></span>
+        <span class="arrow" aria-hidden="true">›</span>
+      </a>
+    </section>
+    <button id="install" type="button">Instalar MEMI en el celular</button>
+    <footer>Acceso rápido a MEMI</footer>
+  </main>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(() => {}));
+    }
+    let installPrompt;
+    const installButton = document.getElementById("install");
+    window.addEventListener("beforeinstallprompt", (event) => {
+      event.preventDefault();
+      installPrompt = event;
+      installButton.style.display = "block";
+    });
+    installButton.addEventListener("click", async () => {
+      if (!installPrompt) return;
+      installPrompt.prompt();
+      await installPrompt.userChoice;
+      installPrompt = null;
+      installButton.style.display = "none";
+    });
+  </script>
+</body>
+</html>
