@@ -33,15 +33,15 @@ async function init(){
   $('#note').textContent=rate?'Los valores en pesos son orientativos (dólar blue de hoy) y se confirman al hacer el pedido.':'';
   render()}
 function render(){
-  const cats=['Todo',...new Set(items.map(p=>p.category))];
+  const cats=['Todo',...new Set(items.flatMap(p=>p.categories))];
   $('#chips').innerHTML=cats.map(c=>`<button class="chip" aria-pressed="${c===cat}" data-c="${esc(c)}">${esc(c)}</button>`).join('');
-  const list=items.filter(p=>cat==='Todo'||p.category===cat);
-  $('#grid').innerHTML=list.length?list.map(p=>`<article class="card" tabindex="0" data-id="${p.id}"><img loading="lazy" src="${esc(p.photo_url)}" alt="${esc(p.title)}"><div class="b"><h3>${esc(p.title)}</h3><span class="tag">${esc(p.category)}</span><p class="pr">${price(p.price_usd)}</p><button class="btn" data-add="${p.id}">Agregar</button></div></article>`).join(''):'<p>Todavía no hay piezas en esta categoría.</p>';
+  const list=items.filter(p=>cat==='Todo'||p.categories.includes(cat));
+  $('#grid').innerHTML=list.length?list.map(p=>`<article class="card" tabindex="0" data-id="${p.id}"><img loading="lazy" src="${esc(p.photos[0])}" alt="${esc(p.title)}"><div class="b"><h3>${esc(p.title)}</h3><span class="tag">${esc(p.categories.join(' · '))}</span><p class="pr">${price(p.price_usd)}</p><button class="btn" data-add="${p.id}">Agregar</button></div></article>`).join(''):'<p>Todavía no hay piezas en esta categoría.</p>';
   count()}
 function count(){$('#cartbtn').textContent=`Mi pedido (${Object.values(cart).reduce((a,b)=>a+b,0)})`}
 function add(id){cart[id]=(cart[id]||0)+1;count()}
 function detail(id){const p=items.find(x=>x.id===id);
-  $('#dd').innerHTML=`<img src="${esc(p.photo_url)}" alt="${esc(p.title)}"><h2>${esc(p.title)}</h2><span class="tag">${esc(p.category)}</span><p style="white-space:pre-line">${esc(p.description)}</p><p class="pr">${price(p.price_usd)}</p><button class="btn" data-add="${p.id}">Agregar al pedido</button> <button class="btn alt" data-close="1">Cerrar</button>`;
+  $('#dd').innerHTML=`<img id="big" src="${esc(p.photos[0])}" alt="${esc(p.title)}">${p.photos.length>1?'<div class="th">'+p.photos.map(u=>`<img src="${esc(u)}" data-big="${esc(u)}" alt="Foto de ${esc(p.title)}">`).join('')+'</div>':''}<h2>${esc(p.title)}</h2><span class="tag">${esc(p.categories.join(' · '))}</span><p style="white-space:pre-line">${esc(p.description)}</p><p class="pr">${price(p.price_usd)}</p><button class="btn" data-add="${p.id}">Agregar al pedido</button> <button class="btn alt" data-close="1">Cerrar</button>`;
   $('#dd').showModal()}
 function cartView(){
   const ids=Object.keys(cart).filter(i=>cart[i]>0),tot=ids.reduce((a,i)=>a+cart[i]*items.find(p=>p.id===i).price_usd,0);
@@ -54,7 +54,8 @@ function send(){
   window.open(`https://wa.me/${CFG.whatsapp}?text=${encodeURIComponent(msg)}`,'_blank')}
 document.addEventListener('click',e=>{
   const t=e.target;
-  if(t.dataset.c){cat=t.dataset.c;render()}
+  if(t.dataset.big)$('#big').src=t.dataset.big;
+  else if(t.dataset.c){cat=t.dataset.c;render()}
   else if(t.dataset.add){add(t.dataset.add);if($('#cd').open)cartView()}
   else if(t.dataset.p){add(t.dataset.p);cartView()}
   else if(t.dataset.m){cart[t.dataset.m]--;count();cartView()}
