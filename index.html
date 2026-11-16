@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="es-AR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Impresiones 3D</title>
@@ -11,9 +10,9 @@
 <header>
 <div class="wrap" style="padding:0">
 <h1 id="t"><img src="logo.png?v=3" alt="Memi Atelier 3D" onerror="this.replaceWith(document.createTextNode(CFG.store))"></h1>
+</div>
 <div class="header-frame">
 <p>Diseños personalizados hechos para vos.<br>Elegí lo que más te guste, armá tu pedido y mandalo por WhatsApp.</p>
-</div>
 </div>
 </header>
 
@@ -47,6 +46,15 @@ async function getRate(){
   const {data}=await db.from('settings').select('value').eq('key','manual_rate').maybeSingle();
   return data?+data.value:0}
 
+/* Mostrar el agradecimiento al llegar al final de la página */
+const noteObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting){
+      $('#note').classList.add('is-visible');
+    }
+  });
+},{threshold:0.1});
+
 async function init(){
   const [r,{data,error}]=await Promise.all([getRate(),db.from('products').select('*').order('created_at',{ascending:false})]);
   rate=r;items=data||[];
@@ -54,7 +62,8 @@ async function init(){
   for(const k of Object.keys(cart))if(!items.some(p=>p.id===k))delete cart[k];
 
   $('#note').innerHTML='Gracias por tu visita, esperamos tu pedido. Cualquier consulta, mandanos por <a href="https://wa.me/'+CFG.whatsapp+'" target="_blank" rel="noopener">WhatsApp</a> 🫶';
-  render()
+  render();
+  noteObserver.observe($('#note'))
 }
 
 function render(){
@@ -101,17 +110,6 @@ document.addEventListener('click',e=>{
 
 document.addEventListener('input',e=>{if(e.target.id==='nt'){memo=e.target.value;save()}});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList.contains('card'))detail(e.target.dataset.id)});
-
-/* Mostrar el agradecimiento al llegar al final de la página */
-const noteObserver = new IntersectionObserver(entries => {
-  entries.forEach(entry => {
-    if(entry.isIntersecting){
-      $('#note').classList.add('is-visible');
-    }
-  });
-},{threshold:0.1});
-
-noteObserver.observe($('#note'));
 
 init();
 </script></body></html>
