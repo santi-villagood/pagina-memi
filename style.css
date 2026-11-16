@@ -31,3 +31,11 @@ label{display:grid;gap:.25rem;font-weight:600}
 input,select,textarea{font:inherit;padding:.55rem;border:1px solid #9fb2ad;border-radius:8px;width:100%}
 .msg{font-weight:600;color:var(--teal)}
 @media(min-width:700px){.grid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}}
+.th{display:flex;gap:.4rem;flex-wrap:wrap;margin:.4rem 0}
+.th img{width:56px;height:56px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--line)}
+.th .x{position:relative}
+.th .x button{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;border:0;background:#b3261e;color:#fff;cursor:pointer}
+.cb{display:flex;gap:.4rem;flex-wrap:wrap}
+.cb button{font:inherit;font-size:.85rem;border:1px solid var(--ink);background:#fff;border-radius:99px;padding:.2rem .7rem;cursor:pointer}
+#cw{height:55vh;margin-bottom:.6rem}
+#cw img{max-width:100%}
