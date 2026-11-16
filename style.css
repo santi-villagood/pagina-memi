@@ -1,9 +1,11 @@
-:root{--bg:#eef2ef;--ink:#13262b;--teal:#0e8f8f;--sun:#f2c230;--line:#cfd9d5}
+:root{--bg:#f8f3fb;--ink:#3b2a2a;--teal:#7b45b0;--sun:#cf66f0;--line:#e4d6ef}
 *{box-sizing:border-box}
 body{margin:0;font-family:'Bricolage Grotesque',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
-header{color:#fff;padding:2.2rem 1rem 1.6rem;background:repeating-linear-gradient(0deg,#13262b 0 6px,#1a3a40 6px 8px)}
+header{background:#fff;color:var(--ink);text-align:center;padding:1rem 1rem 0}
+header::after{content:"";display:block;height:18px;margin:1rem -1rem 0;background:repeating-linear-gradient(0deg,#7b45b0 0 3px,#cf66f0 3px 6px)}
+header h1 img{display:block;margin:0 auto;height:170px;width:auto;max-width:100%}
 header h1{margin:0;font-size:clamp(1.8rem,6vw,3rem);font-weight:800;line-height:1.1}
-header p{margin:.5rem 0 0;max-width:34rem;color:#cde3e0}
+header p{margin:.3rem auto 0;max-width:34rem;color:#6b5a6e}
 main,.wrap{max-width:1100px;margin:0 auto;padding:1rem}
 .chips{display:flex;gap:.5rem;flex-wrap:wrap;margin:.5rem 0 1rem}
 .chip{border:1px solid var(--ink);background:none;color:var(--ink);border-radius:99px;padding:.4rem .9rem;font:inherit;cursor:pointer}
@@ -19,10 +21,10 @@ main,.wrap{max-width:1100px;margin:0 auto;padding:1rem}
 .btn.alt{background:#fff;color:var(--ink);border:1px solid var(--ink)}
 .btn.del{background:#b3261e}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.card:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
-.note{font-size:.85rem;color:#4b6068;margin-top:1.5rem}
+.note{font-size:.85rem;color:#6b5a6e;margin-top:1.5rem}
 #cartbtn{position:fixed;right:1rem;bottom:1rem;box-shadow:0 2px 8px #0003;padding:.8rem 1.1rem;border-radius:99px}
 dialog{border:0;border-radius:16px;max-width:min(520px,94vw);width:100%;padding:1rem}
-dialog::backdrop{background:#13262bb0}
+dialog::backdrop{background:#3b2a2ab0}
 dialog img{width:100%;border-radius:10px;max-height:50vh;object-fit:contain;background:var(--line)}
 .row{display:flex;align-items:center;gap:.5rem;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--line)}
 .q button{width:2rem;height:2rem;border-radius:50%;border:1px solid var(--ink);background:#fff;font:inherit;cursor:pointer}

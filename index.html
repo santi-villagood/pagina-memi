@@ -6,7 +6,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script></head>
 <body>
-<header><div class="wrap" style="padding:0"><h1 id="t"></h1><p>Hecho capa por capa. Elegí lo que te gusta, armá tu pedido y mandalo por WhatsApp.</p></div></header>
+<header><div class="wrap" style="padding:0"><h1 id="t"><img src="logo.png" alt="Memi Atelier 3D"></h1><p>Hecho capa por capa. Elegí lo que te gusta, armá tu pedido y mandalo por WhatsApp.</p></div></header>
 <main>
 <div class="chips" id="chips" role="group" aria-label="Categorías"></div>
 <div class="grid" id="grid"><p>Cargando piezas...</p></div>
@@ -18,7 +18,7 @@
 <script>
 const db=supabase.createClient(CFG.url,CFG.key),$=s=>document.querySelector(s);
 let items=[],cat='Todo',rate=0,cart={};
-document.title=CFG.store;$('#t').textContent=CFG.store;
+document.title=CFG.store;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ars=n=>'$'+Math.round(n).toLocaleString('es-AR');
 const price=p=>`USD ${p}`+(rate?` · aprox. ${ars(p*rate)}`:'');
