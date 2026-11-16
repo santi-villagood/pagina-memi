@@ -6,25 +6,26 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script></head>
 <body>
-<header><div class="wrap" style="padding:0"><h1 id="t"><img src="logo.png" alt="Memi Atelier 3D"></h1><p>Diseños personalizados hechos para vos.<br>Elegí lo que más te guste, armá tu pedido y mandalo por WhatsApp.</p></div></header>
+<header><div class="wrap" style="padding:0"><h1 id="t"><img src="logo.png?v=3" alt="Memi Atelier 3D" onerror="this.replaceWith(document.createTextNode(CFG.store))"></h1><p>Diseños personalizados hechos para vos.<br>Elegí lo que más te guste, armá tu pedido y mandalo por WhatsApp.</p></div></header>
 <main>
 <div class="chips" id="chips" role="group" aria-label="Categorías"></div>
 <div class="grid" id="grid"><p>Cargando piezas...</p></div>
 <p class="note" id="note"></p>
 </main>
 <button id="cartbtn" aria-label="Mi pedido"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.4a1 1 0 0 0 1 .8h8.9a1 1 0 0 0 1-.8L20 7H6"/></svg><span id="cc" hidden>0</span></button>
+<a id="wa" target="_blank" rel="noopener" aria-label="Escribinos por WhatsApp"><svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg></a>
 <dialog id="dd"></dialog>
 <dialog id="cd"></dialog>
 <script>
 const db=supabase.createClient(CFG.url,CFG.key),$=s=>document.querySelector(s);
 let items=[],cat='Todo',rate=0,cart={},memo='';
 try{const s=JSON.parse(localStorage.getItem('memi-cart')||'{}');cart=s.cart||{};memo=s.memo||''}catch(e){}
-document.title=CFG.store;
+document.title=CFG.store;$('#wa').href='https://wa.me/'+CFG.whatsapp+'?text='+encodeURIComponent('Hola! Tengo una consulta.');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ars=n=>'$'+Math.round(n).toLocaleString('es-AR');
 const fm=n=>'$'+Math.round(n).toLocaleString('es-AR');
 const ARS=p=>p.price_ars!=null?+p.price_ars:Math.round(p.price_usd*rate/100)*100;
-const pr=p=>`<span class="ars">${fm(ARS(p))}</span><span class="usd">USD ${(+p.price_usd).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}</span>`;
+const pr=p=>`<span class="ars">${fm(ARS(p))}</span>`;
 function save(){try{localStorage.setItem('memi-cart',JSON.stringify({cart,memo}))}catch(e){}}
 async function getRate(){
   try{const j=await (await fetch('https://dolarapi.com/v1/dolares/blue')).json();if(j.venta)return +j.venta}catch(e){}
@@ -35,7 +36,7 @@ async function init(){
   rate=r;items=data||[];
   if(error){$('#grid').innerHTML='<p>No se pudieron cargar las piezas. Detalle: '+esc(error.message)+'</p>';return}
   for(const k of Object.keys(cart))if(!items.some(p=>p.id===k))delete cart[k];
-  $('#note').textContent='Precios en pesos argentinos. Se confirman al hacer el pedido.';
+  $('#note').innerHTML='Gracias por tu visita, esperamos tu pedido. Cualquier consulta, mandanos por <a href="https://wa.me/'+CFG.whatsapp+'" target="_blank" rel="noopener">WhatsApp</a> 🫶';
   render()}
 function render(){
   const cats=['Todo',...new Set(items.flatMap(p=>p.categories))];
@@ -50,7 +51,7 @@ function detail(id){const p=items.find(x=>x.id===id);
   $('#dd').showModal()}
 function cartView(){
   const ids=Object.keys(cart).filter(i=>cart[i]>0),tot=ids.reduce((a,i)=>a+cart[i]*ARS(items.find(p=>p.id===i)),0);
-  $('#cd').innerHTML=`<h2>Mi pedido</h2>`+(ids.length?ids.map(i=>{const p=items.find(x=>x.id===i);return `<div class="row"><span>${esc(p.title)}<br><small>${fm(ARS(p))} c/u</small></span><span class="q"><button data-m="${i}" aria-label="Quitar uno">-</button> ${cart[i]} <button data-p="${i}" aria-label="Agregar uno">+</button></span></div>`}).join('')+`<label>Detalles de tu pedido (opcional)<textarea id="nt" rows="3" placeholder="Ej: nombre para el cuadro, colores, tamaño...">${esc(memo)}</textarea></label><p class="pr">Total: ${fm(tot)}</p><button class="btn" data-send="1">Enviar pedido por WhatsApp</button> `:'<p>Todavía no agregaste nada. Tocá "Agregar" en las piezas que te gusten.</p>')+`<button class="btn alt" data-close="1">Cerrar</button>`;
+  $('#cd').innerHTML=`<h2>Mi pedido</h2>`+(ids.length?ids.map(i=>{const p=items.find(x=>x.id===i);return `<div class="row"><span>${esc(p.title)}<br><small>${fm(ARS(p))} c/u</small></span><span class="q"><button data-m="${i}" aria-label="Quitar uno">-</button> ${cart[i]} <button data-p="${i}" aria-label="Agregar uno">+</button></span></div>`}).join('')+`<label>Detalles de tu pedido (opcional)<textarea id="nt" rows="3" placeholder="Ej: nombre para el cuadro, colores, tamaño...">${esc(memo)}</textarea></label><p class="pr">Total: ${fm(tot)}</p><p class="note" style="margin:0 0 .6rem">El precio final se confirma por WhatsApp.</p><button class="btn" data-send="1">Enviar pedido por WhatsApp</button> `:'<p>Todavía no agregaste nada. Tocá "Agregar" en las piezas que te gusten.</p>')+`<button class="btn alt" data-close="1">Cerrar</button>`;
   if(!$('#cd').open)$('#cd').showModal()}
 function send(){
   const ids=Object.keys(cart).filter(i=>cart[i]>0);let tot=0;
@@ -72,3 +73,4 @@ document.addEventListener('input',e=>{if(e.target.id==='nt'){memo=e.target.value
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList.contains('card'))detail(e.target.dataset.id)});
 init();
 </script></body></html>
+
