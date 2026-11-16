@@ -17,21 +17,38 @@
 </header>
 
 <main>
-<div class="chips" id="chips" role="group" aria-label="Categorías"></div>
+<div class="chips" id="chips" role="group" aria-label="Filtros activos"></div>
 <div class="grid" id="grid"><p>Cargando piezas...</p></div>
 <p class="note" id="note"></p>
 </main>
 
+<button id="menubtn" aria-label="Abrir menú y buscador" aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+
 <button id="cartbtn" aria-label="Mi pedido"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.4a1 1 0 0 0 1 .8h8.9a1 1 0 0 0 1-.8L20 7H6"/></svg><span id="cc" hidden>0</span></button>
 
 <a id="wa" target="_blank" rel="noopener" aria-label="Escribinos por WhatsApp"><svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg></a>
+
+<!-- PANEL LATERAL: buscador + categorías -->
+<dialog id="sd" class="side" aria-label="Menú y buscador">
+<div class="side-in">
+  <div class="side-top">
+    <h2>Buscar</h2>
+    <button class="x" data-close="1" aria-label="Cerrar panel">×</button>
+  </div>
+  <label class="slabel" for="q">Nombre o categoría</label>
+  <input id="q" class="sinput" type="search" placeholder="Ej: máscara, llavero..." autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" autofocus>
+  <p class="scount" id="sc" aria-live="polite"></p>
+  <div class="cats" id="pc" role="group" aria-label="Categorías"></div>
+  <button class="btn" data-close="1">Ver resultados</button>
+</div>
+</dialog>
 
 <dialog id="dd"></dialog>
 <dialog id="cd"></dialog>
 
 <script>
 const db=supabase.createClient(CFG.url,CFG.key),$=s=>document.querySelector(s);
-let items=[],cat='Todo',rate=0,cart={},memo='';
+let items=[],cat=null,q='',rate=0,cart={},memo='';
 try{const s=JSON.parse(localStorage.getItem('memi-cart')||'{}');cart=s.cart||{};memo=s.memo||''}catch(e){}
 document.title=CFG.store;$('#wa').href='https://wa.me/'+CFG.whatsapp+'?text='+encodeURIComponent('Hola! Tengo una consulta.');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -40,6 +57,16 @@ const fm=n=>'$'+Math.round(n).toLocaleString('es-AR');
 const ARS=p=>p.price_ars!=null?+p.price_ars:Math.round(p.price_usd*rate/100)*100;
 const pr=p=>`<span class="ars">${fm(ARS(p))}</span>`;
 function save(){try{localStorage.setItem('memi-cart',JSON.stringify({cart,memo}))}catch(e){}}
+
+/* Búsqueda: ignora mayúsculas y acentos; busca en nombre y categorías (no en la descripción) */
+const norm=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+function matches(p){
+  const words=norm(q).split(/\s+/).filter(Boolean);
+  if(!words.length)return true;
+  const hay=norm(p.title+' '+p.categories.join(' '));
+  return words.every(w=>hay.includes(w))
+}
+const visible=()=>items.filter(p=>(!cat||p.categories.includes(cat))&&matches(p));
 
 async function getRate(){
   try{const j=await (await fetch('https://dolarapi.com/v1/dolares/blue')).json();if(j.venta)return +j.venta}catch(e){}
@@ -67,12 +94,32 @@ async function init(){
 }
 
 function render(){
-  const cats=['Todo',...new Set(items.flatMap(p=>p.categories))];
-  $('#chips').innerHTML=cats.map(c=>`<button class="chip" aria-pressed="${c===cat}" data-c="${esc(c)}">${esc(c)}</button>`).join('');
-  const list=items.filter(p=>cat==='Todo'||p.categories.includes(cat));
-  $('#grid').innerHTML=list.length?list.map(p=>`<article class="card" tabindex="0" data-id="${p.id}"><img loading="lazy" src="${esc(p.photos[0])}" alt="${esc(p.title)}"><div class="b"><h3>${esc(p.title)}</h3><span class="tag">${esc(p.categories.join(' · '))}</span><p class="pr">${pr(p)}</p><button class="btn" data-add="${p.id}">Agregar</button></div></article>`).join(''):'<p>Todavía no hay piezas en esta categoría.</p>';
+  const term=q.trim(),list=visible();
+
+  /* Barra de filtros: "Todo" resetea; cada filtro activo es un botón con su "×" */
+  $('#chips').innerHTML=
+    `<button class="chip" aria-pressed="${!cat&&!term}" data-reset="1">Todo</button>`+
+    (cat?`<button class="chip act" data-rmcat="1" aria-label="Quitar categoría ${esc(cat)}">${esc(cat)} <span class="x" aria-hidden="true">×</span></button>`:'')+
+    (term?`<button class="chip act" data-rmq="1" aria-label="Quitar búsqueda ${esc(term)}">‘${esc(term)}’ <span class="x" aria-hidden="true">×</span></button>`:'');
+
+  /* Categorías dentro del panel */
+  const cats=[...new Set(items.flatMap(p=>p.categories))];
+  $('#pc').innerHTML=[`<button class="cat" aria-pressed="${!cat}" data-cat="">Todo</button>`,...cats.map(c=>`<button class="cat" aria-pressed="${c===cat}" data-cat="${esc(c)}">${esc(c)}</button>`)].join('');
+  $('#sc').textContent=list.length+(list.length===1?' pieza':' piezas');
+
+  /* Grilla */
+  if(list.length){
+    $('#grid').innerHTML=list.map(p=>`<article class="card" tabindex="0" data-id="${p.id}"><img loading="lazy" src="${esc(p.photos[0])}" alt="${esc(p.title)}"><div class="b"><h3>${esc(p.title)}</h3><span class="tag">${esc(p.categories.join(' · '))}</span><p class="pr">${pr(p)}</p><button class="btn" data-add="${p.id}">Agregar</button></div></article>`).join('')
+  }else if(term){
+    $('#grid').innerHTML=`<div class="empty"><p>No encontramos nada con ‘${esc(term)}’${cat?' en '+esc(cat):''}</p><button class="btn" data-rmq="1">Limpiar búsqueda</button></div>`
+  }else{
+    $('#grid').innerHTML='<p>Todavía no hay piezas en esta categoría.</p>'
+  }
   count()
 }
+
+function openSide(){$('#sd').showModal();$('#q').focus()}
+function resetAll(){cat=null;q='';$('#q').value='';render()}
 
 function count(){const n=Object.values(cart).reduce((a,b)=>a+Math.max(b,0),0);$('#cc').textContent=n;$('#cc').hidden=!n;save()}
 function add(id){cart[id]=(cart[id]||0)+1;count();const b=$('#cartbtn');b.classList.remove('bump');void b.offsetWidth;b.classList.add('bump')}
@@ -97,19 +144,30 @@ function send(){
 
 document.addEventListener('click',e=>{
   const t=e.target;
-  if(t.dataset.big)$('#big').src=t.dataset.big;
-  else if(t.dataset.c){cat=t.dataset.c;render()}
+  if(t.id==='sd')t.close();                               /* toque afuera del panel (sobre lo oscurecido) */
+  else if(t.dataset.big)$('#big').src=t.dataset.big;
+  else if(t.dataset.reset){resetAll()}
+  else if(t.dataset.rmcat){cat=null;render()}
+  else if(t.dataset.rmq){q='';$('#q').value='';render()}
+  else if(t.dataset.cat!==undefined){const c=t.dataset.cat||null;cat=(c===cat)?null:c;render()}
   else if(t.dataset.add){add(t.dataset.add);if($('#cd').open)cartView()}
   else if(t.dataset.p){add(t.dataset.p);cartView()}
   else if(t.dataset.m){cart[t.dataset.m]--;count();cartView()}
   else if(t.dataset.send)send();
   else if(t.dataset.close)t.closest('dialog').close();
+  else if(t.closest('#menubtn'))openSide();
   else if(t.closest('#cartbtn'))cartView();
   else if(t.closest('.card'))detail(t.closest('.card').dataset.id)
 });
 
-document.addEventListener('input',e=>{if(e.target.id==='nt'){memo=e.target.value;save()}});
-document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList.contains('card'))detail(e.target.dataset.id)});
+document.addEventListener('input',e=>{
+  if(e.target.id==='nt'){memo=e.target.value;save()}
+  else if(e.target.id==='q'){q=e.target.value;render()}   /* resultados en vivo */
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&e.target.classList.contains('card'))detail(e.target.dataset.id);
+  else if(e.key==='Enter'&&e.target.id==='q'){e.preventDefault();$('#sd').close()}  /* Enter cierra el panel y deja ver la grilla */
+});
 
 init();
 </script></body></html>
