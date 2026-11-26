@@ -1,26 +1,79 @@
 <!doctype html>
 <html lang="es-AR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Impresiones 3D</title>
+<title>Memi Atelier 3D · Impresiones 3D personalizadas</title>
+<meta name="description" content="Diseños personalizados impresos en 3D. Elegí lo que más te guste, armá tu pedido y coordinamos por WhatsApp. Hecho a pedido, listo en 3 a 4 días.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_AR">
+<meta property="og:title" content="Memi Atelier 3D · Impresiones 3D personalizadas">
+<meta property="og:description" content="Diseños personalizados hechos para vos. Elegí lo que más te guste, armá tu pedido y mandalo por WhatsApp.">
+<meta property="og:image" content="logo.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap">
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script></head>
-<body>
+<body class="tienda">
 
-<header>
-<div class="wrap" style="padding:0">
-<h1 id="t"><img src="logo.png?v=3" alt="Memi Atelier 3D" onerror="this.replaceWith(document.createTextNode(CFG.store))"></h1>
+<header class="site-header" id="hd">
+<div class="hd-top">
+<h1 id="t"><img src="logo.png?v=3" width="1332" height="1181" alt="Memi Atelier 3D" onerror="this.replaceWith(document.createTextNode(CFG.store))"></h1>
 </div>
-<div class="header-frame">
+<div class="header-frame" id="hdband">
 <p>Diseños personalizados hechos para vos.<br>Elegí lo que más te guste, armá tu pedido y mandalo por WhatsApp.</p>
 </div>
 </header>
+<div class="hd-spacer" aria-hidden="true"></div>
+
+<!-- CÍRCULOS DE CATEGORÍAS (estilo estados de WhatsApp). Se arman en buildStories(). -->
+<nav class="stories" aria-label="Categorías">
+<ul class="stories-track" id="stories"></ul>
+</nav>
 
 <main>
 <div class="chips" id="chips" role="group" aria-label="Filtros activos"></div>
 <div class="grid" id="grid"><p>Cargando piezas...</p></div>
-<p class="note" id="note"></p>
 </main>
+
+<!-- ¿CÓMO HAGO MI PEDIDO? -->
+<section class="steps sec" aria-labelledby="steps-t">
+<div class="sec-in">
+<h2 id="steps-t">¿Cómo hago mi pedido?</h2>
+<ol role="list">
+<li class="step">
+<span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2Z"/></svg><span class="n">1</span></span>
+<div><h3>Elegí</h3><p>Sumá al pedido lo que más te guste.</p></div>
+</li>
+<li class="step">
+<span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5h6M9 11h6M9 15h4"/></svg><span class="n">2</span></span>
+<div><h3>Armá tu pedido</h3><p>Revisá tu pedido y agregá detalles si querés personalizarlo. No se cobra nada en este paso.</p></div>
+</li>
+<li class="step">
+<span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11.5a8 8 0 0 1-11.9 7L4 20l1.5-4.4a8 8 0 1 1 15-4.1Z"/><path d="m8.8 11.6 2.1 2.1 4.3-4.3"/></svg><span class="n">3</span></span>
+<div><h3>Coordinamos por WhatsApp</h3><p>Te mandamos a WhatsApp con tu pedido y acordamos pago y entrega.</p></div>
+</li>
+</ol>
+<p class="lead">Hecho a pedido, listo en 3 a 4 días.</p>
+</div>
+</section>
+
+<!-- PREGUNTAS FRECUENTES (texto fijo, no va al admin ni a Supabase) -->
+<section class="faq sec" aria-labelledby="faq-t">
+<div class="sec-in">
+<h2 id="faq-t">Preguntas frecuentes</h2>
+<div class="faq-list">
+<details><summary>¿Tienen stock?</summary><p>No: trabajamos a pedido. Cada pieza se imprime cuando la pedís, por eso tarda unos días en estar lista.</p></details>
+<details><summary>¿Cuánto tarda en estar listo mi pedido?</summary><p>De 3 a 4 días.</p></details>
+<details><summary>¿Hacen pedidos especiales?</summary><p>Sí, a convenir por WhatsApp.</p></details>
+<details><summary>¿Qué medios de pago aceptan?</summary><p>Cualquier tipo de transferencia: Mercado Pago, Naranja X, etc.</p></details>
+<details><summary>¿Puedo personalizar un producto?</summary><p>Sí, la mayoría son personalizables. Lo coordinamos por WhatsApp y el precio se ajusta según la modificación.</p></details>
+</div>
+</div>
+</section>
+
+<!-- PIE -->
+<footer class="site-foot sec">
+<p class="note" id="note"></p>
+</footer>
 
 <button id="menubtn" aria-label="Abrir menú y buscador" aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
 
@@ -50,7 +103,10 @@
 const db=supabase.createClient(CFG.url,CFG.key),$=s=>document.querySelector(s);
 let items=[],cat=null,q='',rate=0,cart={},memo='';
 try{const s=JSON.parse(localStorage.getItem('memi-cart')||'{}');cart=s.cart||{};memo=s.memo||''}catch(e){}
-document.title=CFG.store;$('#wa').href='https://wa.me/'+CFG.whatsapp+'?text='+encodeURIComponent('Hola! Tengo una consulta.');
+/* Título: usa CFG.store sin guiones sueltos ("-Memi 3D-" -> "Memi 3D") */
+const STORE=String(CFG.store||'').replace(/^[\s\-–—]+|[\s\-–—]+$/g,'');
+if(STORE)document.title=STORE+' · Impresiones 3D personalizadas';
+$('#wa').href='https://wa.me/'+CFG.whatsapp+'?text='+encodeURIComponent('Hola! Tengo una consulta.');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ars=n=>'$'+Math.round(n).toLocaleString('es-AR');
 const fm=n=>'$'+Math.round(n).toLocaleString('es-AR');
@@ -89,8 +145,16 @@ async function init(){
   for(const k of Object.keys(cart))if(!items.some(p=>p.id===k))delete cart[k];
 
   $('#note').innerHTML='Gracias por tu visita, esperamos tu pedido. Cualquier consulta, mandanos por <a href="https://wa.me/'+CFG.whatsapp+'" target="_blank" rel="noopener">WhatsApp</a> 🫶';
+  buildStories();
   render();
-  noteObserver.observe($('#note'))
+  noteObserver.observe($('#note'));
+
+  /* Link directo a un producto: ?p=<id>. Si el id no existe, se ignora y se limpia la URL */
+  const pid=new URL(location.href).searchParams.get('p');
+  if(pid){
+    if(items.some(x=>x.id===pid))detail(pid,false);
+    else{try{history.replaceState(null,'',urlWith(null))}catch(e){}}
+  }
 }
 
 function render(){
@@ -115,7 +179,43 @@ function render(){
   }else{
     $('#grid').innerHTML='<p>Todavía no hay piezas en esta categoría.</p>'
   }
+  syncStories();
   count()
+}
+
+/* ---------- Círculos de categorías ----------
+   storyList es la base para las "historias" de verdad: cada categoría trae la portada y todos
+   sus productos (más nuevo primero) con sus fotos. Para convertirlo en visor a pantalla completa
+   alcanza con cambiar onStoryTap() para que llame a openStory(cat) usando estos datos. */
+let storyList=[],storyCat;
+function buildStories(){
+  const by=new Map();
+  for(const p of items)for(const c of (p.categories||[])){if(!by.has(c))by.set(c,[]);by.get(c).push(p)}
+  storyList=[...by].map(([cat,ps])=>({
+    cat,
+    cover:(ps[0].photos&&ps[0].photos[0])||'',                 /* foto del producto más reciente de la categoría */
+    items:ps.map(p=>({id:p.id,title:p.title,photos:p.photos||[]}))
+  }));
+  const circle=(c,label,img,extra)=>`<li><button type="button" class="story${extra}" data-story="${esc(c)}" aria-pressed="false" title="${esc(label)}"><span class="ring"><span class="ph">${img?`<img src="${esc(img)}" width="72" height="72" alt="" ${extra?'':'loading="lazy"'}>`:''}</span></span><span class="lbl">${esc(label)}</span></button></li>`;
+  $('#stories').innerHTML=circle('','Todo','logo.png?v=3',' all')+storyList.map(s=>circle(s.cat,s.cat,s.cover,'')).join('')
+}
+function onStoryTap(c){            /* hoy filtra la grilla; mañana puede abrir el visor de historias */
+  cat=(c===null||c===cat)?null:c;
+  render()
+}
+function syncStories(){
+  let act=null;
+  document.querySelectorAll('.story').forEach(b=>{
+    const on=(b.dataset.story||null)===cat;
+    b.setAttribute('aria-pressed',on);
+    if(on)act=b
+  });
+  if(storyCat!==cat){                 /* centrar el círculo activo solo cuando cambia la categoría */
+    storyCat=cat;
+    const tr=$('#stories');
+    if(act&&tr&&tr.scrollWidth>tr.clientWidth)
+      tr.scrollTo({left:act.parentElement.offsetLeft-(tr.clientWidth-act.offsetWidth)/2,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})
+  }
 }
 
 function openSide(){$('#sd').showModal();$('#q').focus()}
@@ -124,9 +224,44 @@ function resetAll(){cat=null;q='';$('#q').value='';render()}
 function count(){const n=Object.values(cart).reduce((a,b)=>a+Math.max(b,0),0);$('#cc').textContent=n;$('#cc').hidden=!n;save()}
 function add(id){cart[id]=(cart[id]||0)+1;count();const b=$('#cartbtn');b.classList.remove('bump');void b.offsetWidth;b.classList.add('bump')}
 
-function detail(id){const p=items.find(x=>x.id===id);
-  $('#dd').innerHTML=`<img id="big" src="${esc(p.photos[0])}" alt="${esc(p.title)}">${p.photos.length>1?'<div class="th">'+p.photos.map(u=>`<img src="${esc(u)}" data-big="${esc(u)}" alt="Foto de ${esc(p.title)}">`).join('')+'</div>':''}<h2>${esc(p.title)}</h2><span class="tag">${esc(p.categories.join(' · '))}</span><p style="white-space:pre-line">${esc(p.description)}</p><p class="pr">${pr(p)}</p><button class="btn" data-add="${p.id}">Agregar al pedido</button> <button class="btn alt" data-close="1">Cerrar</button>`;
-  $('#dd').showModal()
+/* ---------- Detalle de producto con link propio (?p=<id>) ---------- */
+let detailPushed=false,cpTimer;
+const urlWith=id=>{const u=new URL(location.href);if(id)u.searchParams.set('p',id);else u.searchParams.delete('p');return u};
+
+function detail(id,push=true){const p=items.find(x=>x.id===id);if(!p)return;
+  $('#dd').innerHTML=`<img id="big" src="${esc(p.photos[0])}" alt="${esc(p.title)}">${p.photos.length>1?'<div class="th">'+p.photos.map(u=>`<img src="${esc(u)}" data-big="${esc(u)}" alt="Foto de ${esc(p.title)}">`).join('')+'</div>':''}<h2>${esc(p.title)}</h2><span class="tag">${esc(p.categories.join(' · '))}</span><p style="white-space:pre-line">${esc(p.description)}</p><p class="pr">${pr(p)}</p><div class="dact"><button class="btn" data-add="${p.id}">Agregar al pedido</button><button class="btn alt" data-copy="${p.id}">Copiar link</button><button class="btn alt" data-close="1">Cerrar</button></div><p class="copied" id="cpmsg" role="status" aria-live="polite"></p>`;
+  if(!$('#dd').open)$('#dd').showModal();
+  if(push){try{history.pushState({p:id},'',urlWith(id));detailPushed=true}catch(e){}}
+}
+
+/* Al cerrar el detalle (×, Cerrar o Esc) se vuelve a la URL base */
+$('#dd').addEventListener('close',()=>{
+  if(detailPushed){detailPushed=false;try{history.back()}catch(e){}}
+  else if(new URL(location.href).searchParams.has('p')){try{history.replaceState(null,'',urlWith(null))}catch(e){}}
+});
+/* Botón "atrás" / "adelante" del navegador */
+window.addEventListener('popstate',()=>{
+  const id=new URL(location.href).searchParams.get('p'),dd=$('#dd');
+  if(id&&items.some(x=>x.id===id)){detail(id,false);detailPushed=!!(history.state&&history.state.p)}
+  else if(dd.open){detailPushed=false;dd.close()}
+});
+
+function legacyCopy(text){
+  const prev=document.activeElement,ta=document.createElement('textarea');
+  ta.value=text;ta.setAttribute('readonly','');ta.style.cssText='position:fixed;top:0;left:0;opacity:0;font-size:16px';
+  ($('#dd').open?$('#dd'):document.body).appendChild(ta);   /* dentro del modal, si no queda bloqueado */
+  ta.focus();ta.select();ta.setSelectionRange(0,text.length);
+  let ok=false;try{ok=document.execCommand('copy')}catch(e){}
+  ta.remove();if(prev&&prev.focus)prev.focus();return ok
+}
+async function copyLink(id){
+  const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('p',id);
+  const link=u.toString();let ok=false;
+  try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(link);ok=true}}catch(e){}
+  if(!ok)ok=legacyCopy(link);
+  const m=$('#cpmsg');if(!m)return;
+  m.textContent=ok?'Link copiado':'No se pudo copiar. Copialo desde la barra del navegador.';
+  clearTimeout(cpTimer);cpTimer=setTimeout(()=>{m.textContent=''},2500)
 }
 
 function cartView(){
@@ -145,6 +280,7 @@ function send(){
 document.addEventListener('click',e=>{
   const t=e.target;
   if(t.id==='sd')t.close();                               /* toque afuera del panel (sobre lo oscurecido) */
+  else if(t.closest('.story'))onStoryTap(t.closest('.story').dataset.story||null);   /* círculos de categorías */
   else if(t.dataset.big)$('#big').src=t.dataset.big;
   else if(t.dataset.reset){resetAll()}
   else if(t.dataset.rmcat){cat=null;render()}
@@ -154,6 +290,7 @@ document.addEventListener('click',e=>{
   else if(t.dataset.p){add(t.dataset.p);cartView()}
   else if(t.dataset.m){cart[t.dataset.m]--;count();cartView()}
   else if(t.dataset.send)send();
+  else if(t.dataset.copy)copyLink(t.dataset.copy);
   else if(t.dataset.close)t.closest('dialog').close();
   else if(t.closest('#menubtn'))openSide();
   else if(t.closest('#cartbtn'))cartView();
@@ -168,6 +305,28 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&e.target.classList.contains('card'))detail(e.target.dataset.id);
   else if(e.key==='Enter'&&e.target.id==='q'){e.preventDefault();$('#sd').close()}  /* Enter cierra el panel y deja ver la grilla */
 });
+
+/* ---------- Header que se achica con el scroll ----------
+   Solo se escribe la variable --p (0 a 1) en el header; el CSS hace el resto (logo y banda).
+   Un único rAF por frame y listener passive. El header es fixed, así que no mueve el contenido. */
+(function(){
+  const hd=$('#hd'),band=$('#hdband p'),root=document.documentElement,RANGE=140;
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)');
+  let ticking=false,last=-1;
+  function apply(){
+    ticking=false;
+    const y=Math.max(0,window.scrollY||0);
+    let p=Math.min(1,y/RANGE);
+    if(reduce.matches)p=y>40?1:0;                 /* sin animación: cambio directo */
+    p=Math.round(p*1000)/1000;
+    if(p!==last){last=p;hd.style.setProperty('--p',p)}
+  }
+  function measure(){root.style.setProperty('--bh',band.offsetHeight+'px')}
+  window.addEventListener('scroll',()=>{if(!ticking){ticking=true;requestAnimationFrame(apply)}},{passive:true});
+  if(reduce.addEventListener)reduce.addEventListener('change',apply);
+  if('ResizeObserver' in window)new ResizeObserver(measure).observe(band);else window.addEventListener('resize',measure);
+  measure();apply()
+})();
 
 init();
 </script></body></html>

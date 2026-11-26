@@ -1,4 +1,6 @@
 :root{--bg:#f8f3fb;--ink:#3b2a2a;--teal:#7b45b0;--sun:#cf66f0;--line:#e4d6ef}
+/* La tienda (index.html) es blanca; el panel (admin.html) conserva su fondo lila de siempre */
+body.tienda{--bg:#fff}
 *{box-sizing:border-box}
 body{margin:0;font-family:'Bricolage Grotesque',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
 
@@ -26,7 +28,7 @@ main,.wrap{max-width:1100px;margin:0 auto;padding:1rem}
 .chip[aria-pressed=true]{background:var(--ink);color:#fff}
 
 .grid{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
-.card{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;box-shadow:0 1px 8px #7b45b014}
 .card img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;background:var(--line)}
 .b{padding:.7rem;display:flex;flex-direction:column;gap:.3rem;flex:1}
 .b h3{margin:0;font-size:1rem}
@@ -79,12 +81,14 @@ dialog .note{
   .bump{animation:none}
   #note{transition:none}
   dialog.side[open]{animation:none}
+  .story .ring,.faq summary::after{transition:none}
 }
 
 .ars{display:block;font-size:1.15rem;font-weight:800}
 .usd{display:block;font-size:.85rem;font-weight:400;color:#736679}
 
 main{padding-bottom:6rem}
+.tienda main{padding-bottom:1rem}
 .note a{color:var(--teal);font-weight:600}
 
 dialog{border:0;border-radius:16px;max-width:min(520px,94vw);width:100%;padding:1rem}
@@ -161,3 +165,134 @@ dialog.side[open]{animation:side-in .25s ease-out}
 .cat{width:100%;text-align:left;border:0;border-radius:10px;background:none;color:var(--ink);font:inherit;padding:.6rem .8rem;cursor:pointer}
 .cat:hover{background:#7b45b012}
 .cat[aria-pressed=true]{background:#7b45b01c;color:var(--teal);font-weight:600}
+
+
+/* =====================================================
+   TIENDA: LÍNEAS VIOLETAS, HEADER QUE SE ACHICA,
+   CÍRCULOS DE CATEGORÍAS, PASOS, PREGUNTAS Y PIE
+   (todo cuelga de clases que usa solo index.html)
+   ===================================================== */
+:root{
+  --rule:linear-gradient(90deg,transparent,#7b45b0aa 15%,#cf66f0aa 85%,transparent); /* línea violeta fina */
+  --rule-soft:#7b45b033;
+  --logo-max:160px;--logo-min:52px;      /* alto del logo: grande arriba, chico al bajar */
+  --hd-pt:12px;--hd-pb:8px;               /* aire arriba y abajo del logo */
+  --bh:76px                               /* alto de la frase de la banda (lo mide el JS) */
+}
+
+/* Cada sección separada por una línea violeta arriba */
+.sec{position:relative}
+.sec::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:var(--rule)}
+.sec-in{max-width:1100px;margin:0 auto;padding:1.8rem 1rem}
+
+/* ---------- Header fijo que se achica con el scroll ----------
+   JS solo escribe --p (0 = arriba del todo, 1 = achicado). El header es fixed y su espacio en el
+   flujo lo reserva .hd-spacer con el tamaño grande, así que el contenido NO salta al achicarse. */
+header.site-header{
+  position:fixed;top:0;left:0;right:0;z-index:4;
+  --p:0;
+  background:#fff;padding:0;border-bottom:0;
+  contain:layout style;
+}
+header.site-header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--rule)}
+.site-header .hd-top{padding:calc(env(safe-area-inset-top,0px) + var(--hd-pt)) 4.4rem var(--hd-pb)}
+.site-header h1{
+  margin:0;padding:0;
+  height:calc(var(--logo-max) - var(--p) * (var(--logo-max) - var(--logo-min)));
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;font-weight:800;line-height:1.1;
+}
+.site-header h1 img{display:block;height:100%;width:auto;max-width:100%;object-fit:contain;margin:0}
+.site-header .header-frame{
+  margin:0;padding:0;
+  background:var(--rule) 0 0/100% 1px no-repeat,#fff;
+  backdrop-filter:none;-webkit-backdrop-filter:none;
+  overflow:hidden;
+  height:calc((var(--bh) + 1px) * (1 - var(--p)));
+  opacity:calc(1 - var(--p) * 1.8);
+}
+.site-header .header-frame p{max-width:36rem;padding:14px 1rem;margin:0 auto}
+.hd-spacer{
+  height:calc(env(safe-area-inset-top,0px) + var(--hd-pt) + var(--logo-max) + var(--hd-pb) + var(--bh) + 1px);
+}
+
+/* ---------- Círculos de categorías (estilo estados de WhatsApp) ---------- */
+.stories{position:relative}
+.stories::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--rule)}
+.stories-track{
+  display:flex;gap:.9rem;list-style:none;margin:0 auto;max-width:1100px;
+  padding:.9rem 1rem 1rem;min-height:7.9rem;
+  overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;-ms-overflow-style:none;
+  scroll-snap-type:x proximity;
+}
+.stories-track::-webkit-scrollbar{display:none}
+.stories-track li{flex:none;scroll-snap-align:start}
+.story{
+  display:flex;flex-direction:column;align-items:center;gap:.4rem;
+  width:76px;padding:0;border:0;background:none;color:var(--ink);font:inherit;cursor:pointer;
+}
+.story .ring{
+  display:block;width:72px;height:72px;padding:3px;border-radius:50%;
+  background:linear-gradient(45deg,var(--teal),var(--sun));
+  transition:padding .15s ease;
+}
+.story .ph{display:block;width:100%;height:100%;border-radius:50%;border:3px solid #fff;overflow:hidden;background:var(--line)}
+.story .ph img{display:block;width:100%;height:100%;object-fit:cover;border-radius:0;max-height:none}
+.story.all .ph{background:#fff}
+.story.all .ph img{object-fit:contain;padding:4px}
+.story .lbl{display:block;max-width:100%;font-size:.78rem;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* activo: aro más grueso y sólido, nombre en violeta */
+.story[aria-pressed=true] .ring{padding:5px;background:var(--teal)}
+.story[aria-pressed=true] .lbl{font-weight:800;color:var(--teal)}
+.story:focus-visible{outline-offset:4px;border-radius:12px}
+
+/* ---------- ¿Cómo hago mi pedido? ---------- */
+.steps h2,.faq h2{margin:0 0 1.2rem;font-size:1.4rem;font-weight:800;text-align:center}
+.steps ol{list-style:none;margin:0;padding:0;display:grid;gap:1.2rem;grid-template-columns:1fr}
+.step{display:flex;gap:.9rem;align-items:flex-start;text-align:left}
+.step .ic{
+  flex:none;position:relative;width:3.2rem;height:3.2rem;border-radius:50%;
+  border:1.5px solid var(--teal);color:var(--teal);background:#fff;display:grid;place-items:center;
+}
+.step .ic svg{width:1.6rem;height:1.6rem}
+.step .ic .n{
+  position:absolute;top:-.35rem;right:-.35rem;width:1.3rem;height:1.3rem;border-radius:50%;
+  background:var(--teal);color:#fff;font-size:.75rem;font-weight:800;display:grid;place-items:center;
+}
+.step h3{margin:0 0 .15rem;font-size:1.05rem}
+.step p{margin:0;color:#6b5a6e;font-size:.95rem}
+.steps .lead{margin:1.4rem 0 0;text-align:center;font-weight:600;color:var(--teal)}
+
+/* ---------- Preguntas frecuentes ---------- */
+.faq-list{max-width:44rem;margin:0 auto;border-top:1px solid var(--rule-soft)}
+.faq details{border-bottom:1px solid var(--rule-soft)}
+.faq summary{
+  position:relative;cursor:pointer;list-style:none;
+  padding:.95rem 2.2rem .95rem .2rem;font-weight:600;
+}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{
+  content:"";position:absolute;right:.5rem;top:50%;width:.55rem;height:.55rem;
+  border-right:2px solid var(--teal);border-bottom:2px solid var(--teal);
+  transform:translateY(-70%) rotate(45deg);transition:transform .2s ease;
+}
+.faq details[open] summary::after{transform:translateY(-30%) rotate(-135deg)}
+.faq summary:focus-visible{outline:3px solid var(--sun);outline-offset:2px;border-radius:6px}
+.faq details p{margin:0 0 1rem;padding:0 2.2rem 0 .2rem;color:#6b5a6e}
+
+/* ---------- Pie ---------- */
+.site-foot{padding:1.6rem 1rem 6rem;text-align:center}
+.site-foot #note{margin:0 auto;max-width:34rem}
+
+/* ---------- Detalle de producto: acciones y aviso "Link copiado" ---------- */
+.dact{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.7rem}
+.dact .btn{margin-top:0}
+.copied{margin:.4rem 0 0;min-height:1.4em;font-size:.9rem;font-weight:600;color:var(--teal)}
+
+@media(min-width:700px){
+  .steps ol{grid-template-columns:repeat(3,1fr);gap:0}
+  .step{flex-direction:column;align-items:center;text-align:center;padding:0 1.4rem}
+  .step+.step{border-left:1px solid var(--rule-soft)}
+  .stories-track{gap:1.2rem}
+}
